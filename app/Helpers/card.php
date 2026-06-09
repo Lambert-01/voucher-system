@@ -104,6 +104,12 @@ function generateVoucherCard($voucher, $templateFront, $templateBack, $outputPat
     $amount = number_format((float)($voucher['original_amount'] ?? 0), 0) . ' RWF';
     $clientName = strtoupper((string)($voucher['client_name'] ?? ''));
 
+    $white = imagecolorallocate($front, 255, 255, 255);
+    imagefilledrectangle($front, (int)($w * 0.118), (int)($h * 0.414), (int)($w * 0.303), (int)($h * 0.436), $white);
+    imagefilledrectangle($front, (int)($w * 0.426), (int)($h * 0.414), (int)($w * 0.611), (int)($h * 0.436), $white);
+    imagefilledrectangle($front, (int)($w * 0.728), (int)($h * 0.414), (int)($w * 0.928), (int)($h * 0.436), $white);
+    imagefilledrectangle($front, (int)($w * 0.212), (int)($h * 0.505), (int)($w * 0.934), (int)($h * 0.523), $white);
+
     cardTextBox($front, $voucher['voucher_no'] ?? '', $w * 0.118, $h * 0.416, $w * 0.21, 21, $green, $boldFont);
     cardTextBox($front, $voucher['eva_id'] ?? 'N/A', $w * 0.426, $h * 0.416, $w * 0.185, 21, $blue, $boldFont);
     cardTextBox($front, $amount, $w * 0.728, $h * 0.416, $w * 0.195, 21, $orange, $boldFont);

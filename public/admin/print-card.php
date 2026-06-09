@@ -63,6 +63,35 @@ if (!$voucher) {
             text-overflow: ellipsis;
             letter-spacing: 0;
         }
+        .field-line-cover {
+            position: absolute;
+            z-index: 1;
+            background: white;
+        }
+        .cover-voucher-no-line {
+            left: 11.8%;
+            top: 41.4%;
+            width: 18.5%;
+            height: 2.2%;
+        }
+        .cover-eva-line {
+            left: 42.6%;
+            top: 41.4%;
+            width: 18.5%;
+            height: 2.2%;
+        }
+        .cover-amount-line {
+            left: 72.8%;
+            top: 41.4%;
+            width: 20%;
+            height: 2.2%;
+        }
+        .cover-client-line {
+            left: 21.2%;
+            top: 50.5%;
+            width: 72.2%;
+            height: 1.8%;
+        }
         .field-voucher-no {
             left: 11.8%;
             top: 40.1%;

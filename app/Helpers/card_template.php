@@ -30,6 +30,10 @@ function renderVoucherCardPages($voucher, $batch = null) {
     <section class="voucher-card-page">
         <div class="voucher-card voucher-card-front">
             <img class="voucher-card-bg" src="<?= htmlspecialchars(cardTemplateUrl('side1')) ?>" alt="Voucher card front">
+            <div class="field-line-cover cover-voucher-no-line"></div>
+            <div class="field-line-cover cover-eva-line"></div>
+            <div class="field-line-cover cover-amount-line"></div>
+            <div class="field-line-cover cover-client-line"></div>
             <div class="card-field field-voucher-no"><?= cardValue($voucher, 'voucher_no') ?></div>
             <div class="card-field field-eva-id"><?= cardValue($voucher, 'eva_id', 'N/A') ?></div>
             <div class="card-field field-amount"><?= htmlspecialchars($amount) ?></div>
