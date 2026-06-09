@@ -96,22 +96,20 @@ function generateVoucherCard($voucher, $templateFront, $templateBack, $outputPat
     $green = imagecolorallocate($front, 12, 92, 22);
     $blue = imagecolorallocate($front, 20, 59, 135);
     $orange = imagecolorallocate($front, 241, 91, 18);
-    $black = imagecolorallocate($front, 7, 17, 31);
     $gold = imagecolorallocate($front, 184, 120, 8);
-    $whiteOverlay = imagecolorallocatealpha($front, 255, 255, 255, 10);
+    $whiteOverlay = imagecolorallocatealpha($front, 255, 255, 255, 4);
     $boldFont = cardFontPath(true);
     $regularFont = cardFontPath(false);
 
     $amount = number_format((float)($voucher['original_amount'] ?? 0), 0) . ' RWF';
     $clientName = strtoupper((string)($voucher['client_name'] ?? ''));
 
-    cardTextBox($front, $voucher['voucher_no'] ?? '', $w * 0.12, $h * 0.415, $w * 0.19, 28, $green, $boldFont);
-    cardTextBox($front, $voucher['eva_id'] ?? 'N/A', $w * 0.426, $h * 0.415, $w * 0.18, 28, $blue, $boldFont);
-    cardTextBox($front, $amount, $w * 0.726, $h * 0.415, $w * 0.20, 28, $orange, $boldFont);
-    cardTextBox($front, $voucher['client_name'] ?? '', $w * 0.214, $h * 0.505, $w * 0.72, 30, $black, $boldFont);
+    cardTextBox($front, $voucher['voucher_no'] ?? '', $w * 0.118, $h * 0.416, $w * 0.21, 21, $green, $boldFont);
+    cardTextBox($front, $voucher['eva_id'] ?? 'N/A', $w * 0.426, $h * 0.416, $w * 0.185, 21, $blue, $boldFont);
+    cardTextBox($front, $amount, $w * 0.728, $h * 0.416, $w * 0.195, 21, $orange, $boldFont);
 
-    imagefilledrectangle($front, (int)($w * 0.185), (int)($h * 0.585), (int)($w * 0.85), (int)($h * 0.705), $whiteOverlay);
-    cardTextBox($front, $clientName, $w * 0.185, $h * 0.675, $w * 0.665, 56, $gold, $regularFont ?: $boldFont, 'center');
+    imagefilledrectangle($front, (int)($w * 0.185), (int)($h * 0.604), (int)($w * 0.85), (int)($h * 0.699), $whiteOverlay);
+    cardTextBox($front, $clientName, $w * 0.185, $h * 0.674, $w * 0.665, 44, $gold, $regularFont ?: $boldFont, 'center');
 
     imagepng($front, $frontPath, 3);
     imagedestroy($front);
@@ -127,6 +125,8 @@ function generateVoucherCard($voucher, $templateFront, $templateBack, $outputPat
     $bw = imagesx($back);
     $bh = imagesy($back);
     $qrPath = cardQrFilesystemPath($voucher['qr_code_path'] ?? null);
+    $white = imagecolorallocate($back, 255, 255, 255);
+    imagefilledrectangle($back, (int)($bw * 0.7095), (int)($bh * 0.348), (int)($bw * 0.8965), (int)($bh * 0.651), $white);
 
     if ($qrPath) {
         $qr = imagecreatefrompng($qrPath);
@@ -134,12 +134,12 @@ function generateVoucherCard($voucher, $templateFront, $templateBack, $outputPat
             imagecopyresampled(
                 $back,
                 $qr,
-                (int)($bw * 0.7565),
-                (int)($bh * 0.3855),
+                (int)($bw * 0.7405),
+                (int)($bh * 0.384),
                 0,
                 0,
-                (int)($bw * 0.099),
-                (int)($bw * 0.099),
+                (int)($bw * 0.126),
+                (int)($bw * 0.126),
                 imagesx($qr),
                 imagesy($qr)
             );
@@ -148,7 +148,7 @@ function generateVoucherCard($voucher, $templateFront, $templateBack, $outputPat
     }
 
     $backBlue = imagecolorallocate($back, 15, 61, 133);
-    cardTextBox($back, $voucher['voucher_no'] ?? '', $bw * 0.708, $bh * 0.675, $bw * 0.20, 16, $backBlue, $boldFont, 'center');
+    cardTextBox($back, $voucher['voucher_no'] ?? '', $bw * 0.708, $bh * 0.648, $bw * 0.20, 16, $backBlue, $boldFont, 'center');
 
     imagepng($back, $backPath, 3);
     imagedestroy($back);

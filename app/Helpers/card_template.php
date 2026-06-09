@@ -8,8 +8,21 @@ function cardValue($row, $key, $fallback = '') {
     return htmlspecialchars((string)($row[$key] ?? $fallback));
 }
 
+function cardCustomerFontSize($name) {
+    $length = strlen((string)$name);
+    if ($length > 30) {
+        return '18pt';
+    }
+    if ($length > 22) {
+        return '21pt';
+    }
+    if ($length > 16) {
+        return '24pt';
+    }
+    return '28pt';
+}
+
 function renderVoucherCardPages($voucher, $batch = null) {
-    $companyName = $voucher['company_name'] ?? ($batch['company_name'] ?? '');
     $amount = function_exists('formatMoney')
         ? formatMoney($voucher['original_amount'] ?? 0)
         : number_format((float)($voucher['original_amount'] ?? 0), 0) . ' RWF';
@@ -20,21 +33,17 @@ function renderVoucherCardPages($voucher, $batch = null) {
             <div class="card-field field-voucher-no"><?= cardValue($voucher, 'voucher_no') ?></div>
             <div class="card-field field-eva-id"><?= cardValue($voucher, 'eva_id', 'N/A') ?></div>
             <div class="card-field field-amount"><?= htmlspecialchars($amount) ?></div>
-            <div class="card-field field-client-line"><?= cardValue($voucher, 'client_name') ?></div>
-            <div class="field-customer-name"><?= cardValue($voucher, 'client_name') ?></div>
-            <?php if ($companyName): ?>
-                <div class="field-company"><?= htmlspecialchars($companyName) ?></div>
-            <?php endif; ?>
+            <div class="field-customer-name" style="font-size: <?= cardCustomerFontSize($voucher['client_name'] ?? '') ?>"><?= cardValue($voucher, 'client_name') ?></div>
         </div>
     </section>
 
     <section class="voucher-card-page">
         <div class="voucher-card voucher-card-back">
             <img class="voucher-card-bg" src="<?= htmlspecialchars(cardTemplateUrl('side2')) ?>" alt="Voucher card back">
+            <div class="field-qr-cover"></div>
             <img class="field-qr" src="<?= htmlspecialchars(qrImageSource($voucher['voucher_no'], $voucher['qr_code_path'] ?? null)) ?>" alt="QR code">
             <div class="field-back-voucher"><?= cardValue($voucher, 'voucher_no') ?></div>
         </div>
     </section>
     <?php
 }
-

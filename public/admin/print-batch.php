@@ -68,84 +68,73 @@ $vouchers = $voucherModel->getByBatch($batchId);
             letter-spacing: 0;
         }
         .field-voucher-no {
-            left: 12%;
-            top: 39.5%;
-            width: 19%;
-            font-size: 14pt;
+            left: 11.8%;
+            top: 40.1%;
+            width: 21%;
+            font-size: 10.5pt;
             color: #0c5c16;
         }
         .field-eva-id {
             left: 42.6%;
-            top: 39.5%;
-            width: 18%;
-            font-size: 14pt;
+            top: 40.1%;
+            width: 18.5%;
+            font-size: 10.5pt;
             color: #143b87;
         }
         .field-amount {
-            left: 72.6%;
-            top: 39.5%;
-            width: 20%;
-            font-size: 14pt;
+            left: 72.8%;
+            top: 40.1%;
+            width: 19.5%;
+            font-size: 10.5pt;
             color: #f15b12;
-        }
-        .field-client-line {
-            left: 21.4%;
-            top: 48.5%;
-            width: 72%;
-            font-size: 15pt;
-            color: #07111f;
         }
         .field-customer-name {
             position: absolute;
             z-index: 3;
             left: 18.5%;
-            top: 59.7%;
+            top: 60.4%;
             width: 66.5%;
-            height: 11%;
+            height: 9.5%;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0 5mm;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.96);
             color: #b87808;
             font-family: Georgia, 'Times New Roman', serif;
-            font-size: clamp(18pt, 4vw, 36pt);
             font-weight: 500;
             text-transform: uppercase;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .field-company {
+        .field-qr-cover {
             position: absolute;
             z-index: 2;
-            left: 39%;
-            top: 78.1%;
-            width: 22%;
-            text-align: center;
-            color: rgba(7, 95, 19, 0.68);
-            font-size: 8pt;
-            font-weight: 700;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            left: 70.95%;
+            top: 34.8%;
+            width: 18.7%;
+            height: 30.3%;
+            background: white;
+            border: 0.28mm dashed #16418d;
+            border-radius: 3mm;
         }
         .field-qr {
             position: absolute;
             z-index: 3;
-            left: 75.65%;
-            top: 38.55%;
-            width: 9.9%;
+            left: 74.05%;
+            top: 38.4%;
+            width: 12.6%;
             aspect-ratio: 1;
             object-fit: contain;
             background: white;
-            padding: 0.8mm;
+            padding: 0.6mm;
         }
         .field-back-voucher {
             position: absolute;
             z-index: 3;
             left: 70.8%;
-            top: 63.6%;
+            top: 61.2%;
             width: 20%;
             text-align: center;
             color: #0f3d85;
