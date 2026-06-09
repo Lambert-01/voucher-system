@@ -1,0 +1,718 @@
+N.HONEST VOUCHER MANAGEMENT SYSTEM DOCUMENTATION
+Plain Text Version
+
+
+================================================================================
+PAGE 1
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+N.HONEST SUPERMARKET
+VOUCHER MANAGEMENT SYSTEM
+Full Technical Implementation Documentation
+Gift Voucher, Company Monthly Voucher, QR Card Printing, Scanning, Redemption, and 
+Boss Monthly Reporting
+Item Description
+Prepared for N.HONEST Supermarket
+Location / Contact Kisimenti - 0788633739 - honestsupermarket.com
+System type Affordable production web system using PHP, MySQL, JavaScript, 
+QR code, and printable voucher cards
+Main users Boss / Owner, Admin / Manager, Cashier
+Version 1.0
+Core promise: Company buys vouchers -> system generates cards -> cashier scans card -> balance 
+reduces -> boss views monthly report.
+
+================================================================================
+PAGE 2
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+Table of Contents
+ 1. Executive Summary
+ 2. Business Problem and System Objective
+ 3. System Scope
+ 4. User Roles and Permissions
+ 5. Full Voucher Workflow
+ 6. Functional Modules
+ 7. Voucher Status and Business Rules
+ 8. Database Design
+ 9. QR Code and Voucher Card Generation
+ 10. Cashier Scanning and Redemption Logic
+ 11. Boss Monthly Reports
+ 12. User Interface Design
+ 13. Security and Fraud Control
+ 14. Production Deployment
+ 15. Integration with Existing POS
+ 16. Testing Plan
+ 17. Backup and Maintenance
+ 18. Implementation Roadmap
+ 19. Appendices
+
+================================================================================
+PAGE 3
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+1. Executive Summary
+This document describes a complete production-ready Voucher Management System for N.HONEST Supermarket. 
+The system is designed for gift vouchers and company monthly vouchers where an organization or person buys a 
+fixed shopping value for beneficiaries. Each beneficiary receives a printed voucher card with a QR code. The 
+cashier scans the card during shopping, enters the amount consumed, and the system deducts it from the 
+remaining balance.
+The system should be affordable, secure, easy for cashiers, and clear for the boss. It can operate as a separate 
+voucher system first, then later be integrated into the main supermarket POS.
+Main Requirement Implementation Direction
+Gift voucher support Each voucher has original amount, remaining balance, status, and 
+usage history.
+Company monthly vouchers Vouchers are grouped in monthly company batches, for example 
+IOM June 2026.
+Printable cards System generates professional cards with QR code, voucher 
+number, EVA ID, amount, client name, logo, stamp, and contact info.
+Cashier operation Cashier scans card, views balance, enters amount used, and 
+confirms redemption.
+Boss report Boss views monthly totals, company usage, remaining balances, and 
+cashier activity.
+Production security Role-based access, audit logs, transaction locking, no manual 
+balance editing by cashier.
+2. Business Problem and System Objective
+Current manual voucher operation requires printed cards and client files. This works temporarily, but it creates 
+risks: double use, wrong balance calculation, missing signatures, and slow reporting. A digital system solves these 
+issues while keeping the card-based process familiar to customers.
+2.1 Business Scenario
+Example: A company buys 50 vouchers of 20,000 RWF each and gives them to employees. Each employee comes 
+to the supermarket and consumes part or all of the voucher amount. The system tracks every use and the 
+remaining balance.
+Term Meaning in the System
+Voucher value Original amount loaded on a customer voucher.
+Balance Remaining amount after customer purchases.
+Beneficiary / Client Person who receives and uses the voucher.
+Company Organization that buys vouchers for beneficiaries.
+Batch Group of vouchers bought for a month or program.
+Redemption The act of using part or all of a voucher during shopping.
+2.2 Objectives
+ Allow companies to buy monthly voucher batches.
+ Register each beneficiary with a unique voucher number and optional EVA ID.
+ Generate QR code cards directly from the system for printing.
+ Allow cashier to scan cards and deduct shopping amount from balance.
+ Prevent fraud by controlling permissions and logging all actions.
+
+================================================================================
+PAGE 4
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+ Allow the boss to view clear monthly reports by company, cashier, and voucher status.
+ Prepare the system for future POS integration.
+3. System Scope
+3.1 Included in the First Production Version
+ Login and role-based access
+ Company registration
+ Voucher batch creation
+ Voucher import from Excel/CSV
+ QR code generation
+ Voucher card printing
+ Cashier scan/redeem page
+ Transaction history
+ Monthly reports
+ Audit logs
+ Backup preparation
+3.2 Future Enhancements
+ SMS/WhatsApp notifications
+ Online payment from people abroad
+ Customer portal for checking balance
+ Direct POS checkout integration
+ Direct EBM/receipt integration where applicable
+ Mobile app for managers
+4. User Roles and Permissions
+Role Main Purpose Allowed Actions Restricted Actions
+Boss / Owner Business oversight and reporting
+View dashboard, monthly 
+reports, company reports, 
+cashier activity, export reports, 
+block vouchers if needed
+Daily cashier redemption is not 
+the main responsibility
+Admin / Manager Voucher operations setup
+Create companies, create 
+batches, import beneficiaries, 
+generate cards, print cards, 
+block/unblock vouchers, correct 
+beneficiary details
+Should not redeem vouchers as 
+normal cashier unless permitted
+Cashier Daily voucher use at checkout
+Scan voucher, view balance, 
+enter purchase amount, enter 
+receipt number, redeem 
+voucher, view today transactions
+Cannot create vouchers, cannot 
+edit balance manually, cannot 
+delete transactions
+5. Full Voucher Workflow
+1. Company buys vouchers for a month or program.
+2. Admin creates a company record if it does not exist.
+3. Admin creates a voucher batch for that company and month.
+4. Admin imports beneficiaries or creates vouchers one by one.
+5. System generates voucher numbers and QR codes.
+6. System generates printable voucher cards.
+7. Customer comes to the supermarket with the card.
+8. Cashier scans QR code or enters voucher number manually.
+9. System displays customer details and current balance.
+
+================================================================================
+PAGE 5
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+10. Cashier enters shopping amount and receipt number.
+11. System deducts amount, saves transaction, and updates voucher status.
+12. Boss opens monthly report to see issued, used, and remaining balances.
+System Flow Description
+Company -> Batch A company monthly purchase is recorded as a batch.
+Batch -> Vouchers Each beneficiary receives one voucher under the batch.
+Voucher -> QR Card Each voucher gets a QR code and printable card.
+Scan -> Redeem Cashier scans card and deducts purchase amount.
+Transaction -> Report Every redemption appears in reports and audit history.
+6. Functional Modules
+6.1 Authentication Module
+ Login with username and password
+ Password hashing using password_hash()
+ Session timeout
+ Role-based redirects
+ Blocked users cannot login
+6.2 Company Module
+ Add/edit companies
+ Store contact person, phone, email, address
+ View company batches
+ Filter reports by company
+6.3 Voucher Batch Module
+ Create monthly batches
+ Store batch code, month, payment status, total value
+ Link batch to company
+ Import voucher list from Excel/CSV
+6.4 Voucher Module
+ Create individual vouchers
+ Generate voucher number
+ Store client name, EVA ID, amount and balance
+ Generate QR code
+ Block/unblock voucher
+6.5 Card Printing Module
+ Generate front card layout
+ Place QR code on card
+ Batch print all cards
+ Download PDF for printing
+ Use N.HONEST branding and stamp
+6.6 Cashier Redemption Module
+ Scan QR code
+ Show voucher details
+
+================================================================================
+PAGE 6
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+ Validate amount
+ Deduct balance
+ Save transaction
+ Show new balance
+6.7 Reports Module
+ Monthly report
+ Company report
+ Cashier report
+ Voucher status report
+ Export to PDF/Excel
+6.8 Audit Module
+ Record logins
+ Record voucher creation
+ Record redemptions
+ Record blocking/cancellation
+ Record report exports
+7. Voucher Status and Business Rules
+Status Meaning Can Be Redeemed?
+active Voucher has full balance and can be used. Yes
+partially_used Voucher has been used before but still has 
+balance. Yes
+used Balance is zero. No
+blocked Temporarily stopped by admin/boss. No
+expired Voucher period ended if expiry is enabled for 
+a batch. No
+cancelled Voucher created wrongly or cancelled. No
+7.1 Core Business Rules
+ A voucher number must be unique.
+ A voucher belongs to one batch and one beneficiary.
+ A voucher balance cannot go below zero.
+ A cashier cannot redeem a voucher that is used, blocked, expired, or cancelled.
+ Every redemption must create a transaction record.
+ Cashiers cannot edit voucher balance directly.
+ System must show previous balance, amount used, and new balance after every redemption.
+ If new balance becomes zero, status must become used.
+ If voucher is used but balance remains, status must become partially_used.
+ Boss and admin must be able to review transaction history at any time.
+8. Database Design
+Recommended database name: nhonest_voucher_system. Use InnoDB tables and foreign keys for consistency. 
+Use DECIMAL for money fields, not FLOAT.
+Database creation
+CREATE DATABASE nhonest_voucher_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE nhonest_voucher_system;
+
+================================================================================
+PAGE 7
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+users table
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(150) NOT NULL,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(150) NULL,
+    phone VARCHAR(50) NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('boss', 'admin', 'cashier') NOT NULL,
+    status ENUM('active', 'blocked') DEFAULT 'active',
+    last_login DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+companies table
+CREATE TABLE companies (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_name VARCHAR(180) NOT NULL,
+    contact_person VARCHAR(150) NULL,
+    phone VARCHAR(50) NULL,
+    email VARCHAR(150) NULL,
+    address VARCHAR(255) NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+voucher_batches table
+CREATE TABLE voucher_batches (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT NOT NULL,
+    batch_code VARCHAR(80) NOT NULL UNIQUE,
+    batch_name VARCHAR(200) NOT NULL,
+    batch_month VARCHAR(20) NOT NULL,
+    total_vouchers INT DEFAULT 0,
+    total_amount DECIMAL(14,2) DEFAULT 0,
+    payment_status ENUM('pending', 'paid', 'cancelled') DEFAULT 'pending',
+    payment_reference VARCHAR(150) NULL,
+    notes TEXT NULL,
+    created_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+) ENGINE=InnoDB;
+vouchers table
+CREATE TABLE vouchers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    batch_id INT NOT NULL,
+    voucher_no VARCHAR(80) NOT NULL UNIQUE,
+    client_name VARCHAR(180) NOT NULL,
+    eva_id VARCHAR(100) NULL,
+    original_amount DECIMAL(14,2) NOT NULL,
+    balance DECIMAL(14,2) NOT NULL,
+    status ENUM('active', 'partially_used', 'used', 'blocked', 'expired', 'cancelled') DEFAULT 'active',
+    qr_code_path VARCHAR(255) NULL,
+    card_image_path VARCHAR(255) NULL,
+    qr_token VARCHAR(120) NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (batch_id) REFERENCES voucher_batches(id),
+    INDEX idx_voucher_no (voucher_no),
+
+================================================================================
+PAGE 8
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+    INDEX idx_status (status)
+) ENGINE=InnoDB;
+voucher_transactions table
+CREATE TABLE voucher_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    voucher_id INT NOT NULL,
+    receipt_no VARCHAR(100) NULL,
+    previous_balance DECIMAL(14,2) NOT NULL,
+    amount_used DECIMAL(14,2) NOT NULL,
+    new_balance DECIMAL(14,2) NOT NULL,
+    cashier_id INT NOT NULL,
+    notes TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (voucher_id) REFERENCES vouchers(id),
+    FOREIGN KEY (cashier_id) REFERENCES users(id),
+    INDEX idx_created_at (created_at),
+    INDEX idx_cashier_id (cashier_id)
+) ENGINE=InnoDB;
+audit_logs table
+CREATE TABLE audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    action VARCHAR(150) NOT NULL,
+    description TEXT NULL,
+    ip_address VARCHAR(80) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX idx_action (action),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB;
+9. QR Code and Voucher Card Generation
+The system should generate voucher cards directly from database values. The card should not be edited manually 
+because manual editing can introduce errors in names, voucher numbers, or amounts.
+9.1 Recommended QR Content
+The QR code should contain only the voucher number or a secure token. The first production version can use the 
+voucher number only:
+QR content example
+HSV-2026-0001
+For higher security, store a qr_token in the database and put voucher_no plus token in the QR. The scan page 
+should validate both.
+Card Field Source in Database Example
+Voucher No vouchers.voucher_no HSV-2026-0001
+Client Name vouchers.client_name ALLELUIA ALAIN
+EVA ID vouchers.eva_id PX-Q3-2026-CB80
+Voucher Amount vouchers.original_amount 436,800 RWF
+QR Code vouchers.qr_code_path assets/qrcodes/HSV-2026-0001.png
+Contact info system settings Kisimenti - 0788633739 - 
+honestsupermarket.com
+
+================================================================================
+PAGE 9
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+9.2 Card Design Notes
+ Use the same N.HONEST front design on all cards.
+ Only data changes: voucher number, EVA ID, amount, and client name.
+ Place QR code where cashier can scan quickly.
+ Keep voucher number readable in case scanner fails.
+ Use the stamp as a background watermark and as official visual identity.
+ Keep contact information small but visible: Kisimenti, 0788633739, honestsupermarket.com.
+9.3 Example Front Card Style
+
+================================================================================
+PAGE 10
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+9.4 Example Back Card Style
+10. Cashier Scanning and Redemption Logic
+For fastest production, use a USB QR scanner. It behaves like a keyboard and types the voucher number into a 
+focused input field. A browser camera scanner can be added later.
+Step Cashier Action System Action
+1 Open scan page Display input field with autofocus.
+2 Scan QR code Voucher number appears in input.
+3 Submit search System fetches voucher and validates 
+status.
+4 Enter shopping amount System checks amount is not greater than 
+balance.
+5 Enter receipt number System saves reference to POS receipt.
+6 Click Redeem System deducts balance and saves 
+transaction.
+7 Show result System displays previous balance, amount 
+used, and new balance.
+Core PHP redemption function
+<?php
+function redeemVoucher(PDO $pdo, int $voucherId, float $amountUsed, string $receiptNo, int $cashierId): array
+{
+    try {
+        $pdo->beginTransaction();
+        $stmt = $pdo->prepare("SELECT * FROM vouchers WHERE id = ? FOR UPDATE");
+        $stmt->execute([$voucherId]);
+
+================================================================================
+PAGE 11
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+        $voucher = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$voucher) {
+            throw new Exception("Voucher not found.");
+        }
+        if (!in_array($voucher['status'], ['active', 'partially_used'])) {
+            throw new Exception("Voucher is not usable.");
+        }
+        $previousBalance = (float)$voucher['balance'];
+        if ($amountUsed <= 0) {
+            throw new Exception("Amount must be greater than zero.");
+        }
+        if ($amountUsed > $previousBalance) {
+            throw new Exception("Insufficient voucher balance.");
+        }
+        $newBalance = $previousBalance - $amountUsed;
+        $newStatus = $newBalance <= 0 ? 'used' : 'partially_used';
+        $update = $pdo->prepare("UPDATE vouchers SET balance = ?, status = ? WHERE id = ?");
+        $update->execute([$newBalance, $newStatus, $voucherId]);
+        $insert = $pdo->prepare("INSERT INTO voucher_transactions
+            (voucher_id, receipt_no, previous_balance, amount_used, new_balance, cashier_id)
+            VALUES (?, ?, ?, ?, ?, ?)");
+        $insert->execute([$voucherId, $receiptNo, $previousBalance, $amountUsed, $newBalance, $cashierId]);
+        $pdo->commit();
+        return ['success' => true, 'new_balance' => $newBalance, 'status' => $newStatus];
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return ['success' => false, 'message' => $e->getMessage()];
+    }
+}
+The FOR UPDATE command is important in production. It locks the voucher row during redemption so that two 
+cashiers cannot spend the same balance at the same time.
+11. Boss Monthly Reports
+Boss should see simple monthly summaries, not complicated technical pages. Reports should be filterable by 
+month, company, cashier, and voucher status.
+Report Purpose Key Data
+Monthly Summary Shows total voucher value, total used, and 
+remaining balance for a month.
+Total issued, total consumed, balance, 
+active, used, partially used.
+Company Report Shows voucher performance for one 
+company.
+Company, batch, month, issued, used, 
+remaining.
+Cashier Report Shows cashier redemption activity. Cashier, transactions, total amount 
+redeemed.
+Voucher Status Report Shows active, used, blocked, expired, 
+cancelled vouchers. Status count and balance.
+Transaction Report Detailed list of all voucher uses. Date, receipt number, client, amount used, 
+cashier.
+Monthly report SQL
+
+================================================================================
+PAGE 12
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+SELECT 
+    c.company_name,
+    b.batch_month,
+    COUNT(v.id) AS total_vouchers,
+    SUM(v.original_amount) AS total_issued,
+    SUM(v.original_amount - v.balance) AS total_used,
+    SUM(v.balance) AS total_remaining
+FROM voucher_batches b
+JOIN companies c ON c.id = b.company_id
+JOIN vouchers v ON v.batch_id = b.id
+WHERE b.batch_month = '2026-06'
+GROUP BY c.company_name, b.batch_month;
+12. User Interface Design
+12.1 Boss Dashboard
+ Total voucher value this month
+ Total used this month
+ Remaining balance
+ Active vouchers
+ Used vouchers
+ Company filters
+ Export PDF/Excel buttons
+12.2 Admin Dashboard
+ Create company
+ Create voucher batch
+ Import beneficiaries
+ Generate QR cards
+ Print cards
+ Manage vouchers
+12.3 Cashier Scan Page
+Section Field/Action
+Scan area Voucher number input with autofocus and QR scanner support.
+Voucher details Client name, EVA ID, original amount, current balance, status.
+Redemption form Amount used, receipt number, notes.
+Result panel Previous balance, new balance, status, success/error message.
+13. Security and Fraud Control
+Because vouchers represent money, the system must be treated like a financial module. The cashier should never 
+have power to manually edit balances.
+Risk Control
+Voucher used twice Database transaction with FOR UPDATE and balance validation.
+Cashier fraud Role restrictions and audit logs.
+Fake voucher number Voucher lookup only accepts database records and can use QR 
+token.
+Manual balance change No direct cashier balance edit; all changes go through transactions.
+
+================================================================================
+PAGE 13
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+Lost card Boss/admin can block voucher.
+Wrong amount entered Receipt number required and transaction history stored.
+Unauthorized access Login, password hashing, role middleware, session timeout.
+13.1 Production Security Checklist
+ Use HTTPS/SSL on hosting.
+ Use password_hash() and password_verify().
+ Use PDO prepared statements for all queries.
+ Validate all amounts as positive numeric values.
+ Use DECIMAL for money.
+ Do not delete transactions; void them with supervisor approval if needed.
+ Back up database daily.
+ Use role middleware on every page.
+ Log every critical action.
+ Keep .env outside public access.
+14. Production Deployment
+Layer Recommendation
+Server VPS or reliable cPanel hosting with PHP 8.2+, MySQL/MariaDB, 
+SSL certificate.
+Domain Use a subdomain such as vouchers.honestsupermarket.com.
+Database MySQL with daily automated backups.
+File storage Store QR codes and card images in public/assets/qrcodes and 
+public/assets/cards.
+Access Only supermarket staff should have accounts.
+Hardware USB QR scanner at cashier desk; printer for cards/reports.
+14.1 Recommended Environment Variables
+.env example
+APP_NAME="N.HONEST Voucher Management System"
+APP_URL="https://vouchers.honestsupermarket.com"
+DB_HOST="localhost"
+DB_NAME="nhonest_voucher_system"
+DB_USER="your_db_user"
+DB_PASS="your_secure_password"
+SESSION_LIFETIME=60
+15. Integration with Existing POS
+The safest approach is to launch this as a separate voucher system first. The supermarket POS continues to 
+handle product sales and receipts. The cashier records the POS receipt number in the voucher system. After the 
+system is stable, it can be integrated with the POS checkout.
+Option Description Recommended Time
+Separate voucher system Voucher system runs independently. Cashier 
+enters POS receipt number manually. Start with this.
+Partial integration POS can open voucher scan page or share 
+receipt number. After testing.
+
+================================================================================
+PAGE 14
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+Full integration POS checkout applies voucher directly and 
+prints unified receipt. Later production phase.
+16. Testing Plan
+Test Case Expected Result
+Create company Company appears in company list.
+Create batch Batch is linked to company and month.
+Import 19 vouchers All voucher records are created with correct balance.
+Generate card Card contains correct voucher number, name, EVA ID, amount, and 
+QR.
+Scan active voucher System displays voucher details.
+Redeem 50,000 RWF Balance reduces correctly and transaction is saved.
+Redeem more than balance System rejects transaction.
+Redeem used voucher System rejects transaction.
+Cashier tries admin page Access denied.
+Boss opens monthly report Correct totals appear.
+17. Backup and Maintenance
+ Daily automatic database backup.
+ Weekly download of backup to external storage.
+ Monthly test restore to confirm backups work.
+ Keep a separate copy of QR codes and printed card PDFs.
+ Review audit logs weekly.
+ Deactivate old cashier accounts immediately when staff leave.
+ Update PHP dependencies every month or when security issues are announced.
+18. Implementation Roadmap
+Phase Deliverables Priority
+Phase 1 Database, login, users, roles, security 
+foundation. Very high
+Phase 2 Companies, batches, voucher 
+creation/import. Very high
+Phase 3 QR generation and printable card 
+generation. Very high
+Phase 4 Cashier scan and redeem page. Very high
+Phase 5 Boss dashboard and monthly reports. High
+Phase 6 Exports, audit logs, backups, production 
+deployment. High
+Phase 7 POS integration, SMS/WhatsApp, customer 
+balance portal. Future
+
+================================================================================
+PAGE 15
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+19. Appendices
+19.1 Sample Voucher Data
+Voucher No Client Name EVA ID Amount
+HSV-2026-0001 ALLELUIA ALAIN PX-Q3-2026-CB80 436,800 RWF
+HSV-2026-0002 BAHIGIRORA JEAN DE LA 
+CROIX PX-Q3-2026-CB70 436,800 RWF
+HSV-2026-0003 BRENDA MUTONI PX-Q3-2026-CB85 436,800 RWF
+HSV-2026-0004 DERRICK KWIZERA PX-Q3-2026-CB82 436,800 RWF
+HSV-2026-0005 DIDIER NSENGIMANA PX-Q3-2026-CB84 436,800 RWF
+HSV-2026-0006 GASANA BRUCE PX-Q3-2026-CB73 436,800 RWF
+HSV-2026-0007 HERVE KAREKEZI PX-Q3-2026-CB81 436,800 RWF
+HSV-2026-0008 ISINGIZWE ARISTIDE PX-Q3-2026-CB71 436,800 RWF
+HSV-2026-0009 KAGAME ERIC PX-Q3-2026-CB74 436,800 RWF
+HSV-2026-0010 MIZERO JEAN FRANCIS PX-Q3-2026-CB76 436,800 RWF
+HSV-2026-0011 MOISE NTAWIHA PX-Q3-2026-CB86 436,800 RWF
+HSV-2026-0012 MUGISHA SABIN PX-Q3-2026-CB75 436,800 RWF
+HSV-2026-0013 PAMELA UHOZABE 436,800 RWF
+HSV-2026-0014 PRINCE MUGISHA PX-Q3-2026-CB83 436,800 RWF
+HSV-2026-0015 RWAKAZAYIRE SWAIB 436,800 RWF
+HSV-2026-0016 TUYISABE AIME JACKSON PX-Q3-2026-CB72 436,800 RWF
+HSV-2026-0017 UWASE ROSE PX-Q3-2026-CB79 436,800 RWF
+HSV-2026-0018 UWIZEYE LAMBERT PX-Q3-2026-CB77 436,800 RWF
+HSV-2026-0019 UWIZEYIMANA CYNTHIA PX-Q3-2026-CB78 436,800 RWF
+19.2 Recommended Project Structure
+Folder structure
+nhonest-voucher-system/
+  app/
+    Controllers/
+      AuthController.php
+      BossController.php
+      CompanyController.php
+      BatchController.php
+      VoucherController.php
+      RedeemController.php
+      ReportController.php
+    Models/
+      User.php
+      Company.php
+      VoucherBatch.php
+      Voucher.php
+      VoucherTransaction.php
+      AuditLog.php
+    Views/
+      auth/
+      boss/
+
+================================================================================
+PAGE 16
+================================================================================
+
+N.HONEST Voucher Management System
+Confidential internal technical documentation - N.HONEST Supermarket
+      admin/
+      cashier/
+      vouchers/
+      layouts/
+    Helpers/
+      auth.php
+      money.php
+      qr.php
+      permissions.php
+  config/
+    database.php
+    app.php
+  public/
+    index.php
+    assets/
+      css/
+      js/
+      images/
+      qrcodes/
+      cards/
+  storage/
+    exports/
+    logs/
+  vendor/
+  composer.json
+  .env
+Final Recommendation
+Build the first production version as a separate voucher system connected operationally to the existing POS by 
+receipt number. This is the fastest and safest route. After one or two months of successful operation, integrate it 
+more deeply with the POS checkout process.
+Final production formula: Company buys monthly vouchers -> Admin generates QR 
+cards -> Cashier scans and redeems -> Boss sees monthly reports.

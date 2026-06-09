@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Template Coordinate Helper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-top: 0; }
+        .templates { display: flex; gap: 20px; margin: 20px 0; }
+        .template-container {
+            flex: 1;
+            position: relative;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .template-container img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .marker {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: red;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: all;
+            cursor: move;
+            z-index: 10;
+        }
+        .marker::after {
+            content: attr(data-label);
+            position: absolute;
+            left: 15px;
+            top: -5px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .controls {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        .control-group label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        .control-group input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .code-output {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .code-output .comment { color: #5c6370; }
+        .code-output .function { color: #61afef; }
+        .code-output .number { color: #d19a66; }
+        .code-output .string { color: #98c379; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Card Template Coordinate Helper</h1>
+        <p>Drag the red markers to position where you want each text element to appear on your card template.</p>
+        
+        <div class="templates">
+            <div class="template-container" id="frontContainer">
+                <img src="/voucher%20%20card/side1.png" alt="Front Template" id="frontImg">
+                <div class="overlay">
+                    <div class="marker" data-label="Voucher #" style="left: 5%; top: 65%;" data-field="voucher"></div>
+                    <div class="marker" data-label="Name" style="left: 5%; top: 73%;" data-field="name"></div>
+                    <div class="marker" data-label="EVA ID" style="left: 5%; top: 80%;" data-field="eva"></div>
+                    <div class="marker" data-label="Amount" style="left: 5%; top: 88%;" data-field="amount"></div>
+                </div>
+            </div>
+            
+            <div class="template-container" id="backContainer">
+                <img src="/voucher%20%20card/side2.png" alt="Back Template" id="backImg">
+                <div class="overlay">
+                    <div class="marker" data-label="QR Code" style="left: 6%; top: 35%;" data-field="qr"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h3>Coordinates (in pixels)</h3>
+            <div class="control-group">
+                <label>Voucher Number:</label>
+                X: <input type="number" id="voucher_x" value="50"> 
+                Y: <input type="number" id="voucher_y" value="350">
+                Size: <input type="number" id="voucher_size" value="16">
+            </div>
+            <div class="control-group">
+                <label>Client Name:</label>
+                X: <input type="number" id="name_x" value="50"> 
+                Y: <input type="number" id="name_y" value="410">
+                Size: <input type="number" id="name_size" value="20">
+            </div>
+            <div class="control-group">
+                <label>EVA ID:</label>
+                X: <input type="number" id="eva_x" value="50"> 
+                Y: <input type="number" id="eva_y" value="445">
+                Size: <input type="number" id="eva_size" value="12">
+            </div>
+            <div class="control-group">
+                <label>Amount:</label>
+                X: <input type="number" id="amount_x" value="50"> 
+                Y: <input type="number" id="amount_y" value="510">
+                Size: <input type="number" id="amount_size" value="18">
+            </div>
+            <div class="control-group">
+                <label>QR Code (Back):</label>
+                X: <input type="number" id="qr_x" value="60"> 
+                Y: <input type="number" id="qr_y" value="180">
+                Size: <input type="number" id="qr_size" value="200">
+            </div>
+            <button onclick="updateCode()">Generate PHP Code</button>
+        </div>
+        
+        <div class="code-output" id="codeOutput">
+            <div class="comment">// Add this to /app/Helpers/card.php (replace existing coordinates)</div>
+        </div>
+    </div>
+
+    <script>
+        const frontImg = document.getElementById('frontImg');
+        const backImg = document.getElementById('backImg');
+        let imgWidth = 0;
+        let imgHeight = 0;
+        
+        frontImg.onload = function() {
+            imgWidth = this.naturalWidth;
+            imgHeight = this.naturalHeight;
+            updateCode();
+        };
+        
+        // Make markers draggable
+        document.querySelectorAll('.marker').forEach(marker => {
+            let isDragging = false;
+            let container = marker.closest('.template-container');
+            
+            marker.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                e.preventDefault();
+            });
+            
+            container.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const rect = container.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width * 100);
+                const y = ((e.clientY - rect.top) / rect.height * 100);
+                
+                marker.style.left = x + '%';
+                marker.style.top = y + '%';
+                
+                updateCoordinates(marker);
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        });
+        
+        function updateCoordinates(marker) {
+            const field = marker.dataset.field;
+            const container = marker.closest('.template-container');
+            const rect = container.getBoundingClientRect();
+            
+            const percentX = parseFloat(marker.style.left);
+            const percentY = parseFloat(marker.style.top);
+            
+            const pixelX = Math.round(percentX / 100 * imgWidth);
+            const pixelY = Math.round(percentY / 100 * imgHeight);
+            
+            const xInput = document.getElementById(field + '_x');
+            const yInput = document.getElementById(field + '_y');
+            
+            if (xInput) xInput.value = pixelX;
+            if (yInput) yInput.value = pixelY;
+        }
+        
+        function updateCode() {
+            const code = `
+<span class="comment">// Voucher number (gold text, top)</span>
+<span class="function">imagettftext</span>($front, <span class="number">${document.getElementById('voucher_size').value}</span>, <span class="number">0</span>, <span class="number">${document.getElementById('voucher_x').value}</span>, <span class="number">${document.getElementById('voucher_y').value}</span>, $gold, $fontPaths[<span class="string">'bold'</span>], $voucher[<span class="string">'voucher_no'</span>]);
+
+<span class="comment">// Client name (white text, bold, uppercase)</span>
+<span class="function">imagettftext</span>($front, <span class="number">${document.getElementById('name_size').value}</span>, <span class="number">0</span>, <span class="number">${document.getElementById('name_x').value}</span>, <span class="number">${document.getElementById('name_y').value}</span>, $white, $fontPaths[<span class="string">'bold'</span>], $clientName);
+
+<span class="comment">// EVA ID (white text, smaller)</span>
+<span class="function">imagettftext</span>($front, <span class="number">${document.getElementById('eva_size').value}</span>, <span class="number">0</span>, <span class="number">${document.getElementById('eva_x').value}</span>, <span class="number">${document.getElementById('eva_y').value}</span>, $white, $fontPaths[<span class="string">'regular'</span>], $voucher[<span class="string">'eva_id'</span>]);
+
+<span class="comment">// Amount (gold text, bold)</span>
+<span class="function">imagettftext</span>($front, <span class="number">${document.getElementById('amount_size').value}</span>, <span class="number">0</span>, <span class="number">${document.getElementById('amount_x').value}</span>, <span class="number">${document.getElementById('amount_y').value}</span>, $gold, $fontPaths[<span class="string">'bold'</span>], $amount);
+
+<span class="comment">// QR code on back (position and size)</span>
+<span class="function">imagecopyresampled</span>($back, $qr, <span class="number">${document.getElementById('qr_x').value}</span>, <span class="number">${document.getElementById('qr_y').value}</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">${document.getElementById('qr_size').value}</span>, <span class="number">${document.getElementById('qr_size').value}</span>, <span class="function">imagesx</span>($qr), <span class="function">imagesy</span>($qr));
+            `;
+            
+            document.getElementById('codeOutput').innerHTML = code;
+        }
+        
+        // Update code when inputs change
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', updateCode);
+        });
+    </script>
+</body>
+</html>

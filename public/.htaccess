@@ -1,0 +1,29 @@
+# N.HONEST Voucher System .htaccess
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Redirect to HTTPS (uncomment in production)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Remove .php extension
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [L]
+
+# Protect sensitive files
+<FilesMatch "^\.env$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# Enable error pages
+ErrorDocument 404 /404.php
+ErrorDocument 403 /403.php

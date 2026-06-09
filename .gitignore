@@ -1,0 +1,35 @@
+# Environment
+.env
+
+# Database backups
+*.sql.backup
+backup_*.sql
+
+# Generated files
+public/assets/qrcodes/*.png
+public/assets/cards/*.png
+public/assets/cards/*.pdf
+storage/exports/*
+storage/logs/*
+
+# Vendor
+vendor/
+composer.lock
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
