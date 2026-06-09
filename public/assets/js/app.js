@@ -8,27 +8,11 @@ let lastActivity = Date.now();
 function resetSessionTimer() {
     lastActivity = Date.now();
     clearTimeout(sessionWarningTimer);
-    
-    // Show warning 5 minutes before timeout
-    sessionWarningTimer = setTimeout(showSessionWarning, sessionTimeout - 300000);
-    
-    // Hide any existing warning
     hideSessionWarning();
 }
 
 function showSessionWarning() {
-    const warning = document.createElement('div');
-    warning.id = 'session-warning';
-    warning.className = 'session-warning';
-    warning.innerHTML = '<i class="fas fa-clock"></i> Your session will expire in 5 minutes. Click anywhere to extend.';
-    document.body.insertAdjacentElement('afterbegin', warning);
-    
-    warning.addEventListener('click', function() {
-        fetch(window.location.href, { method: 'HEAD' })
-            .then(() => {
-                resetSessionTimer();
-            });
-    });
+    hideSessionWarning();
 }
 
 function hideSessionWarning() {

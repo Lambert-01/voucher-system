@@ -1048,26 +1048,6 @@ code {
     z-index: 50;
 }
 
-/* Session timeout warning */
-.session-warning {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: var(--warning);
-    color: white;
-    padding: 12px;
-    text-align: center;
-    z-index: 100;
-    font-weight: 600;
-    animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-    from { transform: translateY(-100%); }
-    to { transform: translateY(0); }
-}
-
 /* Loading states */
 .loading {
     position: relative;
@@ -1324,11 +1304,6 @@ form.filter-form {
     .header,
     .navbar {
         position: static;
-    }
-    
-    .session-warning {
-        position: static;
-        margin-bottom: 16px;
     }
 }
 
