@@ -97,7 +97,7 @@ function generateVoucherCard($voucher, $templateFront, $templateBack, $outputPat
     $blue = imagecolorallocate($front, 20, 59, 135);
     $orange = imagecolorallocate($front, 241, 91, 18);
     $gold = imagecolorallocate($front, 184, 120, 8);
-    $whiteOverlay = imagecolorallocatealpha($front, 255, 255, 255, 4);
+    $whiteOverlay = imagecolorallocatealpha($front, 255, 255, 255, 0);
     $boldFont = cardFontPath(true);
     $regularFont = cardFontPath(false);
 

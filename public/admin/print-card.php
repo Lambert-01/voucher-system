@@ -95,7 +95,7 @@ if (!$voucher) {
             align-items: center;
             justify-content: center;
             padding: 0 5mm;
-            background: rgba(255, 255, 255, 0.96);
+            background: white;
             color: #b87808;
             font-family: Georgia, 'Times New Roman', serif;
             font-weight: 500;
