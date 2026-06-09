@@ -74,27 +74,27 @@ $vouchers = $voucherModel->getByBatch($batchId);
         }
         .cover-voucher-no-line {
             left: 11.8%;
-            top: 41.4%;
-            width: 18.5%;
-            height: 2.2%;
+            top: 40%;
+            width: 21%;
+            height: 4%;
         }
         .cover-eva-line {
             left: 42.6%;
-            top: 41.4%;
-            width: 18.5%;
-            height: 2.2%;
+            top: 40%;
+            width: 19%;
+            height: 4%;
         }
         .cover-amount-line {
             left: 72.8%;
-            top: 41.4%;
-            width: 20%;
-            height: 2.2%;
+            top: 40%;
+            width: 22%;
+            height: 4%;
         }
         .cover-client-line {
             left: 21.2%;
-            top: 50.5%;
+            top: 48.2%;
             width: 72.2%;
-            height: 1.8%;
+            height: 4.2%;
         }
         .field-voucher-no {
             left: 11.8%;
