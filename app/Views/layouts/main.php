@@ -64,6 +64,7 @@ $assetVersion = max(
                     <li><a href="<?= htmlspecialchars(appUrl('/admin/batches.php')) ?>"><i class="fas fa-layer-group"></i> Batches</a></li>
                     <li><a href="<?= htmlspecialchars(appUrl('/admin/vouchers.php')) ?>"><i class="fas fa-ticket-alt"></i> Vouchers</a></li>
                     <li><a href="<?= htmlspecialchars(appUrl('/admin/import.php')) ?>"><i class="fas fa-file-upload"></i> Import</a></li>
+                    <li><a href="<?= htmlspecialchars(appUrl('/admin/users.php')) ?>"><i class="fas fa-users-cog"></i> Users</a></li>
                 <?php elseif ($_SESSION['role'] === 'cashier'): ?>
                     <li><a href="<?= htmlspecialchars(appUrl('/cashier/scan.php')) ?>"><i class="fas fa-qrcode"></i> Scan Voucher</a></li>
                     <li><a href="<?= htmlspecialchars(appUrl('/cashier/transactions.php')) ?>"><i class="fas fa-receipt"></i> My Transactions</a></li>
