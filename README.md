@@ -81,13 +81,9 @@ location ~ \.php$ {
 
 Open your browser and navigate to: `http://localhost:8000/login.php`
 
-## Default Login Credentials
+## Production Login Setup
 
-All default accounts use password: `password123`
-
-- **Boss**: username: `boss`
-- **Admin**: username: `admin`
-- **Cashier**: username: `cashier`
+Before going live, create real staff accounts from **Admin > Users**, reset any seeded account passwords, and block accounts that should not be used in production.
 
 ## Usage Guide
 

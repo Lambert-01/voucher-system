@@ -97,8 +97,7 @@ CREATE TABLE audit_logs (
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB;
 
--- Insert default users
--- Password for all: password123
+-- Insert initial users. Reset these passwords immediately after installation.
 INSERT INTO users (full_name, username, email, phone, password_hash, role, status) VALUES
 ('Boss Account', 'boss', 'boss@honestsupermarket.com', '0788633739', '$2y$10$xKLMnA703p0KvoJLOxv0SepbKHxX32wCDPOYB63hbSpeRgs22lV4i', 'boss', 'active'),
 ('Admin Account', 'admin', 'admin@honestsupermarket.com', '0788633740', '$2y$10$xKLMnA703p0KvoJLOxv0SepbKHxX32wCDPOYB63hbSpeRgs22lV4i', 'admin', 'active'),
