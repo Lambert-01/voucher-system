@@ -80,6 +80,10 @@ ob_start();
         <i class="fas fa-plus-circle" style="font-size: 28px; color: var(--warning);"></i>
         <span>Create Voucher</span>
     </a>
+    <a href="<?= htmlspecialchars(appUrl('/admin/users.php')) ?>" class="quick-action-btn">
+        <i class="fas fa-users-cog" style="font-size: 28px; color: var(--charcoal);"></i>
+        <span>Manage Users</span>
+    </a>
 </div>
 
 <div class="card">
