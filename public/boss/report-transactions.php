@@ -51,7 +51,7 @@ if (($_GET['export'] ?? '') === 'csv') {
     ], array_map(function ($row) {
         return [
             $row['created_at'],
-            $row['receipt_no'],
+            $row['receipt_no'] ?: '-',
             $row['voucher_no'],
             $row['client_name'],
             $row['company_name'],
@@ -132,7 +132,7 @@ ob_start();
             <?php foreach ($results as $row): ?>
             <tr>
                 <td><?= $row['created_at'] ?></td>
-                <td><?= htmlspecialchars($row['receipt_no']) ?></td>
+                <td><?= htmlspecialchars($row['receipt_no'] ?: '-') ?></td>
                 <td><?= htmlspecialchars($row['voucher_no']) ?></td>
                 <td><?= htmlspecialchars($row['client_name']) ?></td>
                 <td><?= htmlspecialchars($row['company_name']) ?></td>

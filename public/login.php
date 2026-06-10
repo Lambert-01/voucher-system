@@ -82,8 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
             
             <div class="login-info">
-                <p><i class="fas fa-info-circle"></i> <strong>Development Mode</strong></p>
-                <p style="font-size: 0.75rem; margin-top: 6px;">Default credentials: boss/admin/cashier | password123</p>
+                <p><i class="fas fa-info-circle"></i> Access is restricted to authorized N.HONEST staff accounts.</p>
             </div>
         </div>
         

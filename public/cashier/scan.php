@@ -31,20 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $receiptNo = trim($_POST['receipt_no'] ?? '');
         $notes = trim($_POST['notes'] ?? '');
         
-        if (empty($receiptNo)) {
-            $error = 'Receipt number is required';
+        $result = $voucherModel->redeem($voucherId, $amountUsed, $receiptNo !== '' ? $receiptNo : null, $_SESSION['user_id'], $notes);
+
+        if ($result['success']) {
+            $success = 'Voucher redeemed successfully';
+            logAudit($pdo, $_SESSION['user_id'], 'voucher_redeem', "Redeemed voucher ID $voucherId for " . formatMoney($amountUsed));
             $voucher = $voucherModel->getById($voucherId);
         } else {
-            $result = $voucherModel->redeem($voucherId, $amountUsed, $receiptNo, $_SESSION['user_id'], $notes);
-            
-            if ($result['success']) {
-                $success = 'Voucher redeemed successfully';
-                logAudit($pdo, $_SESSION['user_id'], 'voucher_redeem', "Redeemed voucher ID $voucherId for " . formatMoney($amountUsed));
-                $voucher = $voucherModel->getById($voucherId);
-            } else {
-                $error = $result['message'];
-                $voucher = $voucherModel->getById($voucherId);
-            }
+            $error = $result['message'];
+            $voucher = $voucherModel->getById($voucherId);
         }
     }
 }
@@ -137,8 +132,8 @@ ob_start();
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-receipt"></i> Receipt Number *</label>
-                    <input type="text" name="receipt_no" placeholder="POS receipt number" required>
+                    <label><i class="fas fa-receipt"></i> Receipt Number (Optional)</label>
+                    <input type="text" name="receipt_no" placeholder="POS receipt number if available">
                 </div>
             </div>
             
