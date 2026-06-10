@@ -32,6 +32,18 @@ class User {
         ]);
         return $this->pdo->lastInsertId();
     }
+
+    public function usernameExists($username, $excludeId = null) {
+        if ($excludeId) {
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ? AND id != ?");
+            $stmt->execute([$username, $excludeId]);
+        } else {
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+            $stmt->execute([$username]);
+        }
+
+        return (int)$stmt->fetchColumn() > 0;
+    }
     
     public function getAll() {
         return $this->pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
@@ -41,5 +53,15 @@ class User {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch();
+    }
+
+    public function updateStatus($id, $status) {
+        $stmt = $this->pdo->prepare("UPDATE users SET status = ? WHERE id = ?");
+        return $stmt->execute([$status, $id]);
+    }
+
+    public function resetPassword($id, $password) {
+        $stmt = $this->pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
+        return $stmt->execute([password_hash($password, PASSWORD_DEFAULT), $id]);
     }
 }
