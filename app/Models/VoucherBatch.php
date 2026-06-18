@@ -25,7 +25,7 @@ class VoucherBatch {
 
     public function generateCode($companyName, $batchMonth) {
         $prefix = $this->companyPrefix($companyName);
-        $baseCode = $prefix . '-' . date('Y-m', strtotime($batchMonth . '-01'));
+        $baseCode = $prefix . '-' . $this->periodCode($batchMonth);
         $code = $baseCode;
         $counter = 2;
 
@@ -39,7 +39,69 @@ class VoucherBatch {
 
     public function generateName($companyName, $batchMonth) {
         $prefix = $this->companyPrefix($companyName);
-        return $prefix . ' ' . date('F Y', strtotime($batchMonth . '-01')) . ' Vouchers';
+        return $prefix . ' ' . $this->periodLabel($batchMonth) . ' Vouchers';
+    }
+
+    public function buildPeriodValue($periodType, $startDate, $endDate = null) {
+        $start = DateTime::createFromFormat('Y-m-d', $startDate);
+        if (!$start || $start->format('Y-m-d') !== $startDate) {
+            throw new Exception('Please select a valid start date.');
+        }
+
+        switch ($periodType) {
+            case 'daily':
+                return $start->format('Y-m-d');
+
+            case 'weekly':
+                $weekEnd = clone $start;
+                $weekEnd->modify('+6 days');
+                return $start->format('Y-m-d') . '_to_' . $weekEnd->format('Y-m-d');
+
+            case 'monthly':
+                $monthEnd = clone $start;
+                $monthEnd->modify('last day of this month');
+                return $start->format('Y-m-d') . '_to_' . $monthEnd->format('Y-m-d');
+
+            case 'custom':
+                $end = DateTime::createFromFormat('Y-m-d', (string)$endDate);
+                if (!$end || $end->format('Y-m-d') !== $endDate) {
+                    throw new Exception('Please select a valid ending date.');
+                }
+                if ($end < $start) {
+                    throw new Exception('Ending date cannot be before starting date.');
+                }
+                return $start->format('Y-m-d') . '_to_' . $end->format('Y-m-d');
+        }
+
+        throw new Exception('Please select a valid batch period.');
+    }
+
+    public function periodLabel($periodValue) {
+        if (preg_match('/^\d{4}-\d{2}$/', $periodValue)) {
+            return date('F Y', strtotime($periodValue . '-01'));
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $periodValue)) {
+            return date('d M Y', strtotime($periodValue));
+        }
+
+        if (preg_match('/^(\d{4})-W(\d{2})$/', $periodValue, $matches)) {
+            $start = new DateTime();
+            $start->setISODate((int)$matches[1], (int)$matches[2]);
+            $end = clone $start;
+            $end->modify('+6 days');
+            return 'Week ' . $matches[2] . ' (' . $start->format('d M') . ' - ' . $end->format('d M Y') . ')';
+        }
+
+        if (preg_match('/^(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})$/', $periodValue, $matches)) {
+            return date('d M Y', strtotime($matches[1])) . ' to ' . date('d M Y', strtotime($matches[2]));
+        }
+
+        return $periodValue;
+    }
+
+    private function periodCode($periodValue) {
+        return strtoupper(str_replace(['_to_', ' ', '/'], ['-TO-', '-', '-'], $periodValue));
     }
 
     private function companyPrefix($companyName) {

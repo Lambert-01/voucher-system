@@ -2,10 +2,12 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../app/Helpers/auth.php';
 require_once __DIR__ . '/../../app/Helpers/money.php';
+require_once __DIR__ . '/../../app/Models/VoucherBatch.php';
 
 requireRole('admin');
 
 $pdo = getDB();
+$batchModel = new VoucherBatch($pdo);
 
 $stats = $pdo->query("SELECT 
     COUNT(DISTINCT c.id) as total_companies,
@@ -95,7 +97,7 @@ ob_start();
                 <tr>
                     <th>Batch Code</th>
                     <th>Company</th>
-                    <th>Month</th>
+                    <th>Period</th>
                     <th>Vouchers</th>
                     <th>Total Amount</th>
                     <th>Payment Status</th>
@@ -107,7 +109,7 @@ ob_start();
                 <tr>
                     <td><strong><?= htmlspecialchars($batch['batch_code']) ?></strong></td>
                     <td><?= htmlspecialchars($batch['company_name']) ?></td>
-                    <td><?= htmlspecialchars($batch['batch_month']) ?></td>
+                    <td><?= htmlspecialchars($batchModel->periodLabel($batch['batch_month'])) ?></td>
                     <td><?= number_format($batch['total_vouchers']) ?></td>
                     <td><strong><?= formatMoney($batch['total_amount']) ?></strong></td>
                     <td><span class="badge badge-<?= $batch['payment_status'] ?>"><?= $batch['payment_status'] ?></span></td>

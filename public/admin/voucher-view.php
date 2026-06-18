@@ -3,11 +3,13 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../app/Helpers/auth.php';
 require_once __DIR__ . '/../../app/Helpers/money.php';
 require_once __DIR__ . '/../../app/Models/Voucher.php';
+require_once __DIR__ . '/../../app/Models/VoucherBatch.php';
 
 requireRole(['admin', 'boss']);
 
 $pdo = getDB();
 $voucherModel = new Voucher($pdo);
+$batchModel = new VoucherBatch($pdo);
 
 $voucherId = $_GET['id'] ?? 0;
 $voucher = $voucherModel->getById($voucherId);
@@ -76,8 +78,8 @@ ob_start();
             <td><?= htmlspecialchars($voucher['batch_name']) ?></td>
         </tr>
         <tr>
-            <th>Batch Month:</th>
-            <td><?= htmlspecialchars($voucher['batch_month']) ?></td>
+            <th>Batch Period:</th>
+            <td><?= htmlspecialchars($batchModel->periodLabel($voucher['batch_month'])) ?></td>
         </tr>
         <tr>
             <th>Original Amount:</th>

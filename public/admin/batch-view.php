@@ -38,8 +38,8 @@ ob_start();
             <td><?= htmlspecialchars($batch['company_name']) ?></td>
         </tr>
         <tr>
-            <th>Month:</th>
-            <td><?= htmlspecialchars($batch['batch_month']) ?></td>
+            <th>Period:</th>
+            <td><?= htmlspecialchars($batchModel->periodLabel($batch['batch_month'])) ?></td>
         </tr>
         <tr>
             <th>Total Vouchers:</th>

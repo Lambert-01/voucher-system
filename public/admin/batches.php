@@ -18,7 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $data = [
             'company_id' => (int)($_POST['company_id'] ?? 0),
-            'batch_month' => trim($_POST['batch_month'] ?? ''),
+            'batch_month' => $batchModel->buildPeriodValue(
+                $_POST['period_type'] ?? 'monthly',
+                trim($_POST['start_date'] ?? ''),
+                trim($_POST['end_date'] ?? '')
+            ),
             'payment_status' => $_POST['payment_status'] ?? 'pending',
             'payment_reference' => trim($_POST['payment_reference'] ?? ''),
             'notes' => trim($_POST['notes'] ?? ''),
@@ -29,10 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($data['company_id'] <= 0) {
             throw new Exception('Please select a company.');
-        }
-
-        if (!preg_match('/^\d{4}-\d{2}$/', $data['batch_month'])) {
-            throw new Exception('Please select a valid batch month.');
         }
 
         if (!in_array($data['payment_status'], ['pending', 'paid', 'cancelled'], true)) {
@@ -72,7 +72,7 @@ ob_start();
 <div class="page-header">
     <div class="page-title">
         <h1>Manage Voucher Batches</h1>
-        <p>Select company and month only. Batch code and name are generated automatically.</p>
+        <p>Select company and batch period. Batch code and name are generated automatically.</p>
     </div>
 </div>
 
@@ -99,15 +99,34 @@ ob_start();
             </div>
             
             <div class="form-group">
-                <label>Batch Month *</label>
-                <input type="month" name="batch_month" required value="<?= date('Y-m') ?>">
+                <label>Batch Period *</label>
+                <select name="period_type" id="period_type" required>
+                    <option value="weekly">Weekly</option>
+                    <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Starting Date *</label>
+                <input type="date" name="start_date" id="start_date" required value="<?= date('Y-m-d') ?>">
+                <small>For weekly and monthly batches, the system uses this date to calculate the period automatically.</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Ending Date</label>
+                <input type="date" name="end_date" id="end_date">
+                <small id="end_date_hint">Auto-calculated for weekly and monthly periods. Enable Custom Range to choose it yourself.</small>
             </div>
         </div>
 
         <div class="alert alert-info">
             <div>
                 <strong>Auto-generated:</strong> the system will create the batch code and name after you submit.
-                Example: <code>IOM-2026-06</code> and <code>IOM June 2026 Vouchers</code>.
+                Examples: <code>IOM-2026-06-18</code> or <code>IOM-2026-06-18-TO-2026-06-24</code>.
             </div>
         </div>
         
@@ -144,7 +163,7 @@ ob_start();
                 <th>Batch Code</th>
                 <th>Batch Name</th>
                 <th>Company</th>
-                <th>Month</th>
+                <th>Period</th>
                 <th>Vouchers</th>
                 <th>Total Amount</th>
                 <th>Payment</th>
@@ -157,7 +176,7 @@ ob_start();
                 <td><?= htmlspecialchars($batch['batch_code']) ?></td>
                 <td><?= htmlspecialchars($batch['batch_name']) ?></td>
                 <td><?= htmlspecialchars($batch['company_name']) ?></td>
-                <td><?= htmlspecialchars($batch['batch_month']) ?></td>
+                <td><?= htmlspecialchars($batchModel->periodLabel($batch['batch_month'])) ?></td>
                 <td><?= $batch['total_vouchers'] ?></td>
                 <td><?= formatMoney($batch['total_amount']) ?></td>
                 <td><span class="badge badge-<?= $batch['payment_status'] ?>"><?= $batch['payment_status'] ?></span></td>
@@ -173,6 +192,59 @@ ob_start();
 <div class="actions">
     <a href="<?= htmlspecialchars(appUrl('/admin/dashboard.php')) ?>" class="btn btn-secondary">Back to Dashboard</a>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const periodType = document.getElementById('period_type');
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
+    const endDateHint = document.getElementById('end_date_hint');
+
+    function formatDate(date) {
+        return date.toISOString().slice(0, 10);
+    }
+
+    function updateEndDate() {
+        if (!periodType || !startDate || !endDate || !startDate.value) {
+            return;
+        }
+
+        const start = new Date(startDate.value + 'T00:00:00');
+        const end = new Date(start);
+        endDate.readOnly = periodType.value !== 'custom';
+
+        if (periodType.value === 'daily') {
+            endDate.value = formatDate(end);
+            endDateHint.textContent = 'Daily batches use the same start and ending date.';
+            return;
+        }
+
+        if (periodType.value === 'weekly') {
+            end.setDate(start.getDate() + 6);
+            endDate.value = formatDate(end);
+            endDateHint.textContent = 'Weekly batches automatically cover 7 days from the starting date.';
+            return;
+        }
+
+        if (periodType.value === 'monthly') {
+            end.setMonth(start.getMonth() + 1, 0);
+            endDate.value = formatDate(end);
+            endDateHint.textContent = 'Monthly batches automatically end on the last day of the selected month.';
+            return;
+        }
+
+        endDate.readOnly = false;
+        if (!endDate.value) {
+            endDate.value = formatDate(end);
+        }
+        endDateHint.textContent = 'Custom range lets you choose any ending date after the starting date.';
+    }
+
+    periodType.addEventListener('change', updateEndDate);
+    startDate.addEventListener('change', updateEndDate);
+    updateEndDate();
+});
+</script>
 
 <?php
 $content = ob_get_clean();
