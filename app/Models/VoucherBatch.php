@@ -55,12 +55,12 @@ class VoucherBatch {
             case 'weekly':
                 $weekEnd = clone $start;
                 $weekEnd->modify('+6 days');
-                return $start->format('Y-m-d') . '_to_' . $weekEnd->format('Y-m-d');
+                return $start->format('Ymd') . '-' . $weekEnd->format('Ymd');
 
             case 'monthly':
                 $monthEnd = clone $start;
                 $monthEnd->modify('last day of this month');
-                return $start->format('Y-m-d') . '_to_' . $monthEnd->format('Y-m-d');
+                return $start->format('Ymd') . '-' . $monthEnd->format('Ymd');
 
             case 'custom':
                 $end = DateTime::createFromFormat('Y-m-d', (string)$endDate);
@@ -70,7 +70,7 @@ class VoucherBatch {
                 if ($end < $start) {
                     throw new Exception('Ending date cannot be before starting date.');
                 }
-                return $start->format('Y-m-d') . '_to_' . $end->format('Y-m-d');
+                return $start->format('Ymd') . '-' . $end->format('Ymd');
         }
 
         throw new Exception('Please select a valid batch period.');
@@ -95,6 +95,14 @@ class VoucherBatch {
 
         if (preg_match('/^(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})$/', $periodValue, $matches)) {
             return date('d M Y', strtotime($matches[1])) . ' to ' . date('d M Y', strtotime($matches[2]));
+        }
+
+        if (preg_match('/^(\d{8})-(\d{8})$/', $periodValue, $matches)) {
+            $start = DateTime::createFromFormat('Ymd', $matches[1]);
+            $end = DateTime::createFromFormat('Ymd', $matches[2]);
+            if ($start && $end) {
+                return $start->format('d M Y') . ' to ' . $end->format('d M Y');
+            }
         }
 
         return $periodValue;
