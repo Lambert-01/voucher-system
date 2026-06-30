@@ -14,6 +14,48 @@ $batchModel = new VoucherBatch($pdo);
 $success = '';
 $error = '';
 
+function batchStartDate($periodValue) {
+    if (preg_match('/^\d{4}-\d{2}$/', $periodValue)) {
+        return $periodValue . '-01';
+    }
+
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $periodValue)) {
+        return $periodValue;
+    }
+
+    if (preg_match('/^(\d{8})-(\d{8})$/', $periodValue, $matches)) {
+        $start = DateTime::createFromFormat('Ymd', $matches[1]);
+        return $start ? $start->format('Y-m-d') : date('Y-m-d');
+    }
+
+    if (preg_match('/^(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})$/', $periodValue, $matches)) {
+        return $matches[1];
+    }
+
+    return date('Y-m-d');
+}
+
+function batchEndDate($periodValue) {
+    if (preg_match('/^\d{4}-\d{2}$/', $periodValue)) {
+        return date('Y-m-t', strtotime($periodValue . '-01'));
+    }
+
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $periodValue)) {
+        return $periodValue;
+    }
+
+    if (preg_match('/^(\d{8})-(\d{8})$/', $periodValue, $matches)) {
+        $end = DateTime::createFromFormat('Ymd', $matches[2]);
+        return $end ? $end->format('Y-m-d') : date('Y-m-d');
+    }
+
+    if (preg_match('/^(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})$/', $periodValue, $matches)) {
+        return $matches[2];
+    }
+
+    return date('Y-m-d');
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $action = $_POST['action'] ?? 'create';
@@ -131,6 +173,7 @@ ob_start();
 <div class="card">
     <h2>Create New Batch</h2>
     <form method="POST">
+        <input type="hidden" name="action" value="create">
         <div class="form-row">
             <div class="form-group">
                 <label>Company *</label>
@@ -226,6 +269,72 @@ ob_start();
                 <td><span class="badge badge-<?= $batch['payment_status'] ?>"><?= $batch['payment_status'] ?></span></td>
                 <td>
                     <a href="<?= htmlspecialchars(appUrl('/admin/batch-view.php?id=' . $batch['id'])) ?>" class="btn btn-sm">View</a>
+                    <button type="button" class="btn btn-sm btn-secondary" data-edit-batch="<?= $batch['id'] ?>">Edit</button>
+                    <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this batch? Empty batches only can be deleted.');">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="batch_id" value="<?= $batch['id'] ?>">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <tr id="edit-batch-<?= $batch['id'] ?>" class="batch-edit-row" style="display: none;">
+                <td colspan="8">
+                    <form method="POST" class="batch-edit-form">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="batch_id" value="<?= $batch['id'] ?>">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Company *</label>
+                                <select name="company_id" required>
+                                    <?php foreach ($companies as $company): ?>
+                                        <option value="<?= $company['id'] ?>" <?= (int)$batch['company_id'] === (int)$company['id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($company['company_name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Batch Period *</label>
+                                <select name="period_type" class="edit-period-type" required>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly" selected>Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Starting Date *</label>
+                                <input type="date" name="start_date" class="edit-start-date" required value="<?= htmlspecialchars(batchStartDate($batch['batch_month'])) ?>">
+                            </div>
+                            <div class="form-group">
+                                <label>Ending Date</label>
+                                <input type="date" name="end_date" class="edit-end-date" value="<?= htmlspecialchars(batchEndDate($batch['batch_month'])) ?>">
+                                <small>Edit uses the selected period to regenerate the batch code and name.</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Payment Status</label>
+                                <select name="payment_status">
+                                    <option value="pending" <?= $batch['payment_status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
+                                    <option value="paid" <?= $batch['payment_status'] === 'paid' ? 'selected' : '' ?>>Paid</option>
+                                    <option value="cancelled" <?= $batch['payment_status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Reference</label>
+                                <input type="text" name="payment_reference" value="<?= htmlspecialchars($batch['payment_reference'] ?? '') ?>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea name="notes" rows="2"><?= htmlspecialchars($batch['notes'] ?? '') ?></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-edit-cancel="<?= $batch['id'] ?>">Cancel</button>
+                    </form>
                 </td>
             </tr>
             <?php endforeach; ?>
