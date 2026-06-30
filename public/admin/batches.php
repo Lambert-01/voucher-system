@@ -16,6 +16,39 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        $action = $_POST['action'] ?? 'create';
+
+        if ($action === 'delete') {
+            $batchId = (int)($_POST['batch_id'] ?? 0);
+            $batch = $batchModel->getById($batchId);
+            if (!$batch) {
+                throw new Exception('Batch not found.');
+            }
+
+            $voucherCount = $batchModel->voucherCount($batchId);
+            if ($voucherCount > 0) {
+                throw new Exception('This batch has ' . $voucherCount . ' vouchers. Move or delete vouchers first before deleting the batch.');
+            }
+
+            $batchModel->delete($batchId);
+            logAudit($pdo, $_SESSION['user_id'], 'batch_delete', 'Deleted batch: ' . $batch['batch_code']);
+            showNotification('Batch deleted successfully.', 'success');
+            redirectTo('/admin/batches.php');
+        }
+
+        if (!in_array($action, ['create', 'edit'], true)) {
+            throw new Exception('Invalid batch action.');
+        }
+
+        $batchId = (int)($_POST['batch_id'] ?? 0);
+        $existingBatch = null;
+        if ($action === 'edit') {
+            $existingBatch = $batchModel->getById($batchId);
+            if (!$existingBatch) {
+                throw new Exception('Batch not found.');
+            }
+        }
+
         $data = [
             'company_id' => (int)($_POST['company_id'] ?? 0),
             'batch_month' => $batchModel->buildPeriodValue(
@@ -26,8 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'payment_status' => $_POST['payment_status'] ?? 'pending',
             'payment_reference' => trim($_POST['payment_reference'] ?? ''),
             'notes' => trim($_POST['notes'] ?? ''),
-            'total_vouchers' => 0,
-            'total_amount' => 0,
+            'total_vouchers' => $existingBatch['total_vouchers'] ?? 0,
+            'total_amount' => $existingBatch['total_amount'] ?? 0,
             'created_by' => $_SESSION['user_id']
         ];
 
@@ -44,15 +77,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Please select a valid company.');
         }
 
-        $data['batch_code'] = $batchModel->generateCode($company['company_name'], $data['batch_month']);
+        if ($action === 'edit' && (int)$existingBatch['company_id'] === $data['company_id'] && $existingBatch['batch_month'] === $data['batch_month']) {
+            $data['batch_code'] = $existingBatch['batch_code'];
+        } else {
+            $data['batch_code'] = $batchModel->generateCode($company['company_name'], $data['batch_month']);
+        }
         $data['batch_name'] = $batchModel->generateName($company['company_name'], $data['batch_month']);
 
         $pdo->beginTransaction();
-        $batchId = $batchModel->create($data);
-        logAudit($pdo, $_SESSION['user_id'], 'batch_create', 'Created batch: ' . $data['batch_code']);
+        if ($action === 'edit') {
+            $batchModel->update($batchId, $data);
+            logAudit($pdo, $_SESSION['user_id'], 'batch_update', 'Updated batch: ' . $data['batch_code']);
+            $message = 'Batch updated successfully: ' . $data['batch_code'];
+        } else {
+            $batchId = $batchModel->create($data);
+            logAudit($pdo, $_SESSION['user_id'], 'batch_create', 'Created batch: ' . $data['batch_code']);
+            $message = 'Batch created successfully: ' . $data['batch_code'];
+        }
         $pdo->commit();
 
-        showNotification('Batch created successfully: ' . $data['batch_code'], 'success');
+        showNotification($message, 'success');
         redirectTo('/admin/batches.php');
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {

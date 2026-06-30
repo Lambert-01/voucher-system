@@ -135,9 +135,10 @@ class VoucherBatch {
     }
     
     public function update($id, $data) {
-        $stmt = $this->pdo->prepare("UPDATE voucher_batches SET company_id = ?, batch_name = ?, batch_month = ?, payment_status = ?, payment_reference = ?, notes = ? WHERE id = ?");
+        $stmt = $this->pdo->prepare("UPDATE voucher_batches SET company_id = ?, batch_code = ?, batch_name = ?, batch_month = ?, payment_status = ?, payment_reference = ?, notes = ? WHERE id = ?");
         return $stmt->execute([
             $data['company_id'],
+            $data['batch_code'],
             $data['batch_name'],
             $data['batch_month'],
             $data['payment_status'],
@@ -145,6 +146,17 @@ class VoucherBatch {
             $data['notes'] ?? null,
             $id
         ]);
+    }
+
+    public function voucherCount($id) {
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM vouchers WHERE batch_id = ?");
+        $stmt->execute([$id]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function delete($id) {
+        $stmt = $this->pdo->prepare("DELETE FROM voucher_batches WHERE id = ?");
+        return $stmt->execute([$id]);
     }
     
     public function getAll() {
