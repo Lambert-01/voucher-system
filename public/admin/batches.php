@@ -396,6 +396,70 @@ document.addEventListener('DOMContentLoaded', function () {
     periodType.addEventListener('change', updateEndDate);
     startDate.addEventListener('change', updateEndDate);
     updateEndDate();
+
+    document.querySelectorAll('[data-edit-batch]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = this.getAttribute('data-edit-batch');
+            document.querySelectorAll('.batch-edit-row').forEach(function (row) {
+                row.style.display = 'none';
+            });
+            const row = document.getElementById('edit-batch-' + id);
+            if (row) {
+                row.style.display = '';
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-edit-cancel]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = this.getAttribute('data-edit-cancel');
+            const row = document.getElementById('edit-batch-' + id);
+            if (row) {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    document.querySelectorAll('.batch-edit-form').forEach(function (form) {
+        const editPeriodType = form.querySelector('.edit-period-type');
+        const editStartDate = form.querySelector('.edit-start-date');
+        const editEndDate = form.querySelector('.edit-end-date');
+
+        function updateEditEndDate() {
+            if (!editPeriodType || !editStartDate || !editEndDate || !editStartDate.value) {
+                return;
+            }
+
+            const start = new Date(editStartDate.value + 'T00:00:00');
+            const end = new Date(start);
+            editEndDate.readOnly = editPeriodType.value !== 'custom';
+
+            if (editPeriodType.value === 'daily') {
+                editEndDate.value = formatDate(end);
+                return;
+            }
+
+            if (editPeriodType.value === 'weekly') {
+                end.setDate(start.getDate() + 6);
+                editEndDate.value = formatDate(end);
+                return;
+            }
+
+            if (editPeriodType.value === 'monthly') {
+                end.setMonth(start.getMonth() + 1, 0);
+                editEndDate.value = formatDate(end);
+                return;
+            }
+
+            editEndDate.readOnly = false;
+            if (!editEndDate.value) {
+                editEndDate.value = formatDate(end);
+            }
+        }
+
+        editPeriodType.addEventListener('change', updateEditEndDate);
+        editStartDate.addEventListener('change', updateEditEndDate);
+    });
 });
 </script>
 
