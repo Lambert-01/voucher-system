@@ -56,6 +56,46 @@ class Voucher {
         $stmt->execute([$batchId]);
         return $stmt->fetchAll();
     }
+
+    public function getByBatchFiltered($batchId, array $filters = []) {
+        $where = ['batch_id = ?'];
+        $params = [$batchId];
+
+        $search = trim($filters['q'] ?? '');
+        if ($search !== '') {
+            $where[] = "(voucher_no LIKE ? OR client_name LIKE ? OR eva_id LIKE ?)";
+            $like = '%' . $search . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+
+        $status = trim($filters['status'] ?? '');
+        if ($status !== '') {
+            $where[] = 'status = ?';
+            $params[] = $status;
+        }
+
+        $cbFrom = trim($filters['cb_from'] ?? '');
+        if ($cbFrom !== '' && ctype_digit($cbFrom)) {
+            $where[] = "voucher_no REGEXP 'CB[0-9]+$' AND CAST(SUBSTRING_INDEX(voucher_no, 'CB', -1) AS UNSIGNED) >= ?";
+            $params[] = (int)$cbFrom;
+        }
+
+        $cbTo = trim($filters['cb_to'] ?? '');
+        if ($cbTo !== '' && ctype_digit($cbTo)) {
+            $where[] = "voucher_no REGEXP 'CB[0-9]+$' AND CAST(SUBSTRING_INDEX(voucher_no, 'CB', -1) AS UNSIGNED) <= ?";
+            $params[] = (int)$cbTo;
+        }
+
+        $sql = "SELECT * FROM vouchers WHERE " . implode(' AND ', $where) . "
+            ORDER BY
+                CASE WHEN voucher_no REGEXP 'CB[0-9]+$' THEN CAST(SUBSTRING_INDEX(voucher_no, 'CB', -1) AS UNSIGNED) ELSE 999999 END,
+                voucher_no ASC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
     
     public function updateStatus($id, $status) {
         $stmt = $this->pdo->prepare("UPDATE vouchers SET status = ? WHERE id = ?");
