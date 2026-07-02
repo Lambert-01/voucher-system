@@ -25,6 +25,8 @@ $filters = [
     'status' => trim($_GET['status'] ?? ''),
     'cb_from' => trim($_GET['cb_from'] ?? ''),
     'cb_to' => trim($_GET['cb_to'] ?? ''),
+    'created_from' => trim($_GET['created_from'] ?? ''),
+    'created_to' => trim($_GET['created_to'] ?? ''),
 ];
 $vouchers = $voucherModel->getByBatchFiltered($batchId, $filters);
 ?>

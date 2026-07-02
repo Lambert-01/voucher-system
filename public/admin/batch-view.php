@@ -23,15 +23,19 @@ $filters = [
     'status' => trim($_GET['status'] ?? ''),
     'cb_from' => trim($_GET['cb_from'] ?? ''),
     'cb_to' => trim($_GET['cb_to'] ?? ''),
+    'created_from' => trim($_GET['created_from'] ?? ''),
+    'created_to' => trim($_GET['created_to'] ?? ''),
 ];
 $vouchers = $voucherModel->getByBatchFiltered($batchId, $filters);
-$hasFilters = $filters['q'] !== '' || $filters['status'] !== '' || $filters['cb_from'] !== '' || $filters['cb_to'] !== '';
+$hasFilters = $filters['q'] !== '' || $filters['status'] !== '' || $filters['cb_from'] !== '' || $filters['cb_to'] !== '' || $filters['created_from'] !== '' || $filters['created_to'] !== '';
 $printQuery = array_filter([
     'id' => $batch['id'],
     'q' => $filters['q'],
     'status' => $filters['status'],
     'cb_from' => $filters['cb_from'],
     'cb_to' => $filters['cb_to'],
+    'created_from' => $filters['created_from'],
+    'created_to' => $filters['created_to'],
 ], fn($value) => $value !== '' && $value !== null);
 
 $title = 'Batch Details';
@@ -105,6 +109,14 @@ ob_start();
                 <input type="number" name="cb_to" value="<?= htmlspecialchars($filters['cb_to']) ?>" placeholder="125" min="1">
             </div>
             <div class="form-group">
+                <label>Created From</label>
+                <input type="datetime-local" name="created_from" value="<?= htmlspecialchars($filters['created_from']) ?>">
+            </div>
+            <div class="form-group">
+                <label>Created To</label>
+                <input type="datetime-local" name="created_to" value="<?= htmlspecialchars($filters['created_to']) ?>">
+            </div>
+            <div class="form-group">
                 <button type="submit" class="btn btn-primary">Apply Filter</button>
             </div>
         </div>
@@ -128,6 +140,7 @@ ob_start();
                 <th>Original Amount</th>
                 <th>Balance</th>
                 <th>Status</th>
+                <th>Created At</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -140,6 +153,7 @@ ob_start();
                 <td><?= formatMoney($voucher['original_amount']) ?></td>
                 <td><?= formatMoney($voucher['balance']) ?></td>
                 <td><span class="badge badge-<?= $voucher['status'] ?>"><?= $voucher['status'] ?></span></td>
+                <td><?= htmlspecialchars(date('Y-m-d H:i', strtotime($voucher['created_at']))) ?></td>
                 <td>
                     <a href="<?= htmlspecialchars(appUrl('/admin/voucher-view.php?id=' . $voucher['id'])) ?>" class="btn btn-sm">View</a>
                 </td>
