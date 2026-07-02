@@ -165,7 +165,9 @@ ob_start();
 
 <div class="actions">
     <a href="<?= htmlspecialchars(appUrl('/admin/batches.php')) ?>" class="btn btn-secondary">Back to Batches</a>
-    <a href="<?= htmlspecialchars(appUrl('/admin/print-batch.php?id=' . $batch['id'])) ?>" class="btn btn-primary" target="_blank">Print All Cards</a>
+    <a href="<?= htmlspecialchars(appUrl('/admin/print-batch.php?' . http_build_query($printQuery))) ?>" class="btn btn-primary" target="_blank">
+        Print <?= $hasFilters ? 'Filtered' : 'All' ?> Cards (<?= count($vouchers) ?>)
+    </a>
 </div>
 
 <?php
