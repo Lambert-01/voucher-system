@@ -18,7 +18,21 @@ if (!$batch) {
     die('Batch not found');
 }
 
-$vouchers = $voucherModel->getByBatch($batchId);
+$filters = [
+    'q' => trim($_GET['q'] ?? ''),
+    'status' => trim($_GET['status'] ?? ''),
+    'cb_from' => trim($_GET['cb_from'] ?? ''),
+    'cb_to' => trim($_GET['cb_to'] ?? ''),
+];
+$vouchers = $voucherModel->getByBatchFiltered($batchId, $filters);
+$hasFilters = $filters['q'] !== '' || $filters['status'] !== '' || $filters['cb_from'] !== '' || $filters['cb_to'] !== '';
+$printQuery = array_filter([
+    'id' => $batch['id'],
+    'q' => $filters['q'],
+    'status' => $filters['status'],
+    'cb_from' => $filters['cb_from'],
+    'cb_to' => $filters['cb_to'],
+], fn($value) => $value !== '' && $value !== null);
 
 $title = 'Batch Details';
 ob_start();
@@ -65,7 +79,46 @@ ob_start();
 </div>
 
 <div class="card">
-    <h2>Vouchers in this Batch</h2>
+    <h2>Filter Vouchers for Card Printing</h2>
+    <form method="GET" class="filter-form">
+        <input type="hidden" name="id" value="<?= htmlspecialchars($batch['id']) ?>">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Search</label>
+                <input type="text" name="q" value="<?= htmlspecialchars($filters['q']) ?>" placeholder="Voucher no, client name, EVA ID">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="">All Statuses</option>
+                    <?php foreach (['active', 'partially_used', 'used', 'blocked', 'expired', 'cancelled'] as $status): ?>
+                        <option value="<?= $status ?>" <?= $filters['status'] === $status ? 'selected' : '' ?>><?= ucfirst(str_replace('_', ' ', $status)) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>CB From</label>
+                <input type="number" name="cb_from" value="<?= htmlspecialchars($filters['cb_from']) ?>" placeholder="116" min="1">
+            </div>
+            <div class="form-group">
+                <label>CB To</label>
+                <input type="number" name="cb_to" value="<?= htmlspecialchars($filters['cb_to']) ?>" placeholder="125" min="1">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Apply Filter</button>
+            </div>
+        </div>
+    </form>
+    <div class="actions" style="margin-top: 0;">
+        <a href="<?= htmlspecialchars(appUrl('/admin/batch-view.php?id=' . $batch['id'])) ?>" class="btn btn-secondary">Clear Filter</a>
+        <a href="<?= htmlspecialchars(appUrl('/admin/print-batch.php?' . http_build_query($printQuery))) ?>" class="btn btn-success" target="_blank">
+            Print <?= $hasFilters ? 'Filtered' : 'All' ?> Cards (<?= count($vouchers) ?>)
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Vouchers in this Batch <?= $hasFilters ? '(' . count($vouchers) . ' filtered)' : '' ?></h2>
     <table class="table">
         <thead>
             <tr>
