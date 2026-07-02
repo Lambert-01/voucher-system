@@ -88,6 +88,24 @@ class Voucher {
             $params[] = (int)$cbTo;
         }
 
+        $createdFrom = trim($filters['created_from'] ?? '');
+        if ($createdFrom !== '') {
+            $from = DateTime::createFromFormat('Y-m-d\TH:i', $createdFrom);
+            if ($from) {
+                $where[] = 'created_at >= ?';
+                $params[] = $from->format('Y-m-d H:i:00');
+            }
+        }
+
+        $createdTo = trim($filters['created_to'] ?? '');
+        if ($createdTo !== '') {
+            $to = DateTime::createFromFormat('Y-m-d\TH:i', $createdTo);
+            if ($to) {
+                $where[] = 'created_at <= ?';
+                $params[] = $to->format('Y-m-d H:i:59');
+            }
+        }
+
         $sql = "SELECT * FROM vouchers WHERE " . implode(' AND ', $where) . "
             ORDER BY
                 CASE WHEN voucher_no REGEXP 'CB[0-9]+$' THEN CAST(SUBSTRING_INDEX(voucher_no, 'CB', -1) AS UNSIGNED) ELSE 999999 END,
