@@ -20,7 +20,13 @@ if (!$batch) {
     die('Batch not found');
 }
 
-$vouchers = $voucherModel->getByBatch($batchId);
+$filters = [
+    'q' => trim($_GET['q'] ?? ''),
+    'status' => trim($_GET['status'] ?? ''),
+    'cb_from' => trim($_GET['cb_from'] ?? ''),
+    'cb_to' => trim($_GET['cb_to'] ?? ''),
+];
+$vouchers = $voucherModel->getByBatchFiltered($batchId, $filters);
 ?>
 <!DOCTYPE html>
 <html lang="en">
