@@ -4,15 +4,21 @@ require_once __DIR__ . '/../../app/Helpers/auth.php';
 require_once __DIR__ . '/../../app/Helpers/money.php';
 require_once __DIR__ . '/../../app/Helpers/ui.php';
 require_once __DIR__ . '/../../app/Models/Voucher.php';
+require_once __DIR__ . '/../../app/Models/VoucherBatch.php';
+require_once __DIR__ . '/../../app/Models/Company.php';
 
 requireRole('admin');
 
 $pdo = getDB();
 $voucherModel = new Voucher($pdo);
+$batchModel = new VoucherBatch($pdo);
+$companyModel = new Company($pdo);
 
-// Simple search filter
+// Filters
 $search = $_GET['search'] ?? '';
 $statusFilter = $_GET['status'] ?? '';
+$batchFilter = $_GET['batch_id'] ?? '';
+$companyFilter = $_GET['company_id'] ?? '';
 
 $vouchers = $voucherModel->getAll();
 
@@ -30,6 +36,21 @@ if ($statusFilter) {
         return $v['status'] === $statusFilter;
     });
 }
+
+if ($batchFilter) {
+    $vouchers = array_filter($vouchers, function($v) use ($batchFilter) {
+        return (string)$v['batch_id'] === (string)$batchFilter;
+    });
+}
+
+if ($companyFilter) {
+    $vouchers = array_filter($vouchers, function($v) use ($companyFilter) {
+        return (string)$v['company_id'] === (string)$companyFilter;
+    });
+}
+
+$batches = $batchModel->getAll();
+$companies = $companyModel->getAll();
 
 $title = 'Manage Vouchers';
 ob_start();
