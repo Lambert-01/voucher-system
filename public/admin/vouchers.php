@@ -69,6 +69,28 @@ ob_start();
 
 <div class="filter-form">
     <form method="GET" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+        <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+            <label><i class="fas fa-layer-group"></i> Batch</label>
+            <select name="batch_id">
+                <option value="">All Batches</option>
+                <?php foreach ($batches as $batch): ?>
+                    <option value="<?= $batch['id'] ?>" <?= (string)$batchFilter === (string)$batch['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($batch['batch_code']) ?> - <?= htmlspecialchars($batch['batch_name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+            <label><i class="fas fa-building"></i> Company</label>
+            <select name="company_id">
+                <option value="">All Companies</option>
+                <?php foreach ($companies as $company): ?>
+                    <option value="<?= $company['id'] ?>" <?= (string)$companyFilter === (string)$company['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($company['company_name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
         <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 250px;">
             <label><i class="fas fa-search"></i> Search</label>
             <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Voucher No, Client Name, or EVA ID">
@@ -86,7 +108,7 @@ ob_start();
             </select>
         </div>
         <button type="submit" class="btn btn-primary" style="margin-bottom: 0;"><i class="fas fa-search"></i> Filter</button>
-        <?php if ($search || $statusFilter): ?>
+        <?php if ($search || $statusFilter || $batchFilter || $companyFilter): ?>
         <a href="<?= htmlspecialchars(appUrl('/admin/vouchers.php')) ?>" class="btn btn-secondary" style="margin-bottom: 0;"><i class="fas fa-times"></i> Clear</a>
         <?php endif; ?>
     </form>
@@ -136,7 +158,7 @@ ob_start();
     <div class="empty-state">
         <i class="fas fa-ticket-alt"></i>
         <p>No vouchers found</p>
-        <?php if ($search || $statusFilter): ?>
+        <?php if ($search || $statusFilter || $batchFilter || $companyFilter): ?>
         <p style="font-size: 0.875rem; margin-top: 8px;">Try adjusting your filters</p>
         <?php endif; ?>
     </div>
