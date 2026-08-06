@@ -23,7 +23,7 @@ class Voucher {
     }
     
     public function getAll() {
-        $sql = "SELECT v.*, vb.batch_name, vb.batch_month, c.company_name 
+        $sql = "SELECT v.*, vb.batch_name, vb.batch_month, vb.company_id, c.company_name 
                 FROM vouchers v
                 JOIN voucher_batches vb ON vb.id = v.batch_id
                 JOIN companies c ON c.id = vb.company_id
